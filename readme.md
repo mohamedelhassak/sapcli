@@ -1,6 +1,10 @@
 # SAPCLI
 A sample SAP CLI implementation in Go
 
+[![GitHub release](https://img.shields.io/github/release/moul/banner.svg)](https://github.com/mohamedelhassak/sapcli/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0%20%2F%20MIT-%2397ca00.svg)](https://github.com/mohamedelhassak/sapcli/blob/main/LICENSE)
+[![Made by Mohamed El hassak](https://img.shields.io/badge/made%20by-Mohamed%20El%20hassak-blue.svg?style=flat)]
+
 ## One Step Before Go 🙂 <a name="requis"></a>
 * having Go 1.14 or higher installed
 * Having SAP Cloud Subscription ID
@@ -91,3 +95,15 @@ creds:
 #use custom yaml file for create build
 ./sapcli build create --config=/your/custom/path/config.yaml --branch=[BRANCH_NAME] --name=[BUILD_NAME]
 ```
+
+### Releases
+
+See https://github.com/mohamedelhassak/sapcli/releases
+
+## License
+
+© 2022 [Mohamed El hassak]()
+
+Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) ([`LICENSE-APACHE`](LICENSE-APACHE)) or the [MIT license](https://opensource.org/licenses/MIT) ([`LICENSE-MIT`](LICENSE-MIT)), at your option. See the [`LICENSE`](LICENSE) file for more details.
+
+`SPDX-License-Identifier: (Apache-2.0 OR MIT)`
