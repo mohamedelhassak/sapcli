@@ -71,11 +71,8 @@ var buildGetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		code, _ := cmd.Flags().GetString("code")
-		config, _ := cmd.Flags().GetString("config")
 
 		if code != "" && len(args) <= 0 {
-
-			setConfigs(config)
 
 			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code)
 			var build Build
@@ -103,14 +100,11 @@ var buildGetAllCmd = &cobra.Command{
 			fmt.Println(utils.UnknownCommandMsg("build get-all"))
 			return
 		}
-		config, _ := cmd.Flags().GetString("config")
-
-		setConfigs(config)
 
 		body := httpGet(client, SAP_CLOUD_API_URL+"/builds")
 		var builds Builds
 		if err := json.Unmarshal(body, &builds); err != nil { // Parse []byte to go struct pointer
-			log.Fatalf("Couldn't unmarshal JSON")
+			log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 		} else {
 			fmt.Println(utils.PrettyPrintJSON(builds))
 		}
@@ -125,22 +119,20 @@ var buildLogsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		code, _ := cmd.Flags().GetString("code")
-		config, _ := cmd.Flags().GetString("config")
 		zipFileName := "build-" + code + ".zip"
 
 		if code != "" {
-			setConfigs(config)
 
 			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code+"/logs")
 
-			fmt.Println("Start downloading logs for build :" + code)
+			fmt.Println("[STARTING!...] download logs for build :" + code)
 
 			err := utils.DownloadZipFile(LOGS_DIR, zipFileName, body)
 			if err != nil {
-				log.Fatalf("Failed downloading logs: %s", err)
+				log.Fatalf("[FAILED!...] Failed downloading logs: %s", err)
 			}
 
-			fmt.Println("Done. Logs saved into " + LOGS_DIR + "/" + zipFileName)
+			fmt.Println("[FINISHED!...]. Logs saved into " + LOGS_DIR + "/" + zipFileName)
 
 		} else {
 			fmt.Println(utils.UnknownCommandMsg("build logs"))
@@ -157,10 +149,8 @@ var buildProgressCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		code, _ := cmd.Flags().GetString("code")
-		config, _ := cmd.Flags().GetString("config")
 
 		if code != "" && len(args) <= 0 {
-			setConfigs(config)
 			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code+"/progress")
 			buildProgress := getBuildProgress(body)
 			if buildProgress.BuildStatus != "" {
@@ -185,7 +175,6 @@ var buildCreateCmd = &cobra.Command{
 
 		branch, _ := cmd.Flags().GetString("branch")
 		name, _ := cmd.Flags().GetString("name")
-		config, _ := cmd.Flags().GetString("config")
 
 		if branch != "" && name != "" && len(args) <= 0 {
 			reqBody, err := json.Marshal(map[string]string{
@@ -195,8 +184,6 @@ var buildCreateCmd = &cobra.Command{
 			if err != nil {
 				return
 			}
-
-			setConfigs(config)
 
 			fmt.Println("[STARTING!...] Build branch " + branch)
 			body := httpPost(client, SAP_CLOUD_API_URL+"/builds", reqBody)

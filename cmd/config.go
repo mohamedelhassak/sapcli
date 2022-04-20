@@ -2,18 +2,23 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/mohamedelhassak/sapcli/utils"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // config model
 type Config struct {
 	Creds struct {
-		ApiToken       string `yaml:"api-token"`
-		SubscriptionId string `yaml:"subscription-id"`
-	} `yaml:"creds"`
+		APIToken       string `mapstructure:"api-token"`
+		SubscriptionID string `mapstructure:"subscription-id"`
+	} `mapstructure:"creds"`
 }
+
+//init config struct
+var cfg Config
 
 var configCmd = &cobra.Command{
 	Use:     "config",
@@ -33,9 +38,16 @@ var configShowCmd = &cobra.Command{
 			fmt.Println(utils.UnknownCommandMsg("config show"))
 			return
 		}
-		readYAMLConfigs(CONF_FILE_NAME, &cfg)
-		fmt.Println("[INFO!...] Using defaul config file :" + CONF_FILE_NAME)
-		fmt.Println(utils.PrettyPrintYAML(cfg))
+
+		fileName := viper.ConfigFileUsed()
+		extension := filepath.Ext(fileName)
+
+		err := viper.Unmarshal(&cfg)
+		if err != nil {
+			return
+		}
+
+		fmt.Println(utils.PrettyPrint(cfg, extension))
 
 	},
 }

@@ -66,11 +66,8 @@ var deployGetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		code, _ := cmd.Flags().GetString("code")
-		config, _ := cmd.Flags().GetString("config")
 
 		if code != "" && len(args) <= 0 {
-
-			setConfigs(config)
 
 			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code)
 			var deployment Deployment
@@ -97,8 +94,7 @@ var deployGetAllCmd = &cobra.Command{
 			fmt.Println(utils.UnknownCommandMsg("deploy get-all"))
 			return
 		}
-		config, _ := cmd.Flags().GetString("config")
-		setConfigs(config)
+
 		body := httpGet(client, SAP_CLOUD_API_URL+"/deployments")
 
 		var deployments Deployments
@@ -118,10 +114,8 @@ var deployProgressCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		code, _ := cmd.Flags().GetString("code")
-		config, _ := cmd.Flags().GetString("config")
 
 		if code != "" && len(args) <= 0 {
-			setConfigs(config)
 			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/progress")
 
 			deploymentProgress := getDeployProgress(body)
@@ -145,10 +139,8 @@ var deployGetCancellationOptionsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		code, _ := cmd.Flags().GetString("code")
-		config, _ := cmd.Flags().GetString("config")
 
 		if code != "" && len(args) <= 0 {
-			setConfigs(config)
 			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/cancellationoptions")
 
 			fmt.Println(string(body))
@@ -168,7 +160,6 @@ var deployCreateCancellationCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		code, _ := cmd.Flags().GetString("code")
-		config, _ := cmd.Flags().GetString("config")
 		rollbackDatabase, _ := cmd.Flags().GetString("rollbackDatabase")
 
 		if code != "" && len(args) <= 0 {
@@ -178,8 +169,6 @@ var deployCreateCancellationCmd = &cobra.Command{
 			if err != nil {
 				return
 			}
-
-			setConfigs(config)
 
 			body := httpPost(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/cancellation", reqBody)
 			var deploymentCancelResp DeploymentCancelResp

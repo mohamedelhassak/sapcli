@@ -29,3 +29,16 @@ func PrettyPrintYAML(i interface{}) string {
 	}
 	return string(s)
 }
+
+func PrettyPrint(i interface{}, extension string) string {
+	switch extension {
+	case ".json":
+		return PrettyPrintJSON(i)
+	case ".yaml":
+		return PrettyPrintYAML(i)
+	case ".yml":
+		return PrettyPrintYAML(i)
+	default:
+		return ""
+	}
+}

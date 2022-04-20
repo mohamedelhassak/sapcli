@@ -3,9 +3,11 @@ package utils
 import (
 	"bytes"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -128,4 +130,18 @@ func GetEnvExist(key, fallback string) string {
 		log.Println(fallback)
 	}
 	return val
+}
+
+func SearchFileByPattern(pattern string, dirName string) string {
+
+	matches, err := filepath.Glob(dirName + "/" + pattern)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if len(matches) > 1 {
+		log.Fatalf("[ERROR!...] More than one config file found")
+	}
+
+	fmt.Println("[INFO!...] Config file found: " + matches[0])
+	return matches[0]
 }
