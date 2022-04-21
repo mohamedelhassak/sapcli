@@ -53,6 +53,6 @@ var configShowCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(configCmd)
+	
 	configCmd.AddCommand(configShowCmd)
 }
