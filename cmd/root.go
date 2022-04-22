@@ -10,16 +10,27 @@ import (
 )
 
 var cfgFile string
-var rootCmd = &cobra.Command{
-	Use:   "sapcli",
-	Short: "sapcli: A sample CLI to build and deploy CX Hybris to SAP Cloud",
-	Long:  `sapcli: A sample CLI to build and deploy CX Hybris to SAP Cloud`,
+var rootCmd = NewRootCmd()
+
+func NewRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "sapcli",
+		Short: "sapcli: A sample CLI to build and deploy CX Hybris to SAP Cloud",
+		Long:  `sapcli: A sample CLI to build and deploy CX Hybris to SAP Cloud.`,
+	}
+	cmd.CompletionOptions.DisableDefaultCmd = true
+	cmd.AddCommand(
+		NewInfoCmd(),
+		NewVersionCmd(),
+		NewConfigCmd(),
+		NewBuildCmd(),
+		NewDeployCmd())
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "To set config file, default is $SAPCLI_WORK_DIR/.config.yaml")
+	return cmd
 }
 
 func init() {
 	cobra.OnInitialize(initConfigs)
-	//rootCmd.PersistentFlags().String("config", "")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "To set config file, default is $SAPCLI_WORK_DIR/.config.yaml")
 }
 
 // Execute executes the root command.

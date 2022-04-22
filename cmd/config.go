@@ -20,39 +20,44 @@ type Config struct {
 //init config struct
 var cfg Config
 
-var configCmd = &cobra.Command{
-	Use:     "config",
-	Aliases: []string{"conf"},
-	Short:   "config",
-	Long:    `This command can be used view config`,
+func NewConfigCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "config",
+		Aliases: []string{"conf"},
+		Short:   "config",
+		Long:    `This command can be used view config`,
+		Example: "",
+	}
+	cmd.AddCommand(
+		NewConfigShowCmd(),
+	)
+	return cmd
 }
 
-var configShowCmd = &cobra.Command{
-	Use:   "show",
-	Short: "show",
-	Long:  `This command can be used to show subscription & api token`,
+func NewConfigShowCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "show",
+		Short: "show",
+		Long:  `This command can be used to show subscription & api token`,
 
-	Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) > 0 {
-			fmt.Println(utils.UnknownCommandMsg("config show"))
-			return
-		}
+			if len(args) > 0 {
+				fmt.Println(utils.UnknownCommandMsg("config show"))
+				return
+			}
 
-		fileName := viper.ConfigFileUsed()
-		extension := filepath.Ext(fileName)
+			fileName := viper.ConfigFileUsed()
+			extension := filepath.Ext(fileName)
 
-		err := viper.Unmarshal(&cfg)
-		if err != nil {
-			return
-		}
+			err := viper.Unmarshal(&cfg)
+			if err != nil {
+				return
+			}
 
-		fmt.Println(utils.PrettyPrint(cfg, extension))
+			fmt.Println(utils.PrettyPrint(cfg, extension))
 
-	},
-}
-
-func init() {
-	
-	configCmd.AddCommand(configShowCmd)
+		},
+	}
+	return cmd
 }
