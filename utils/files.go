@@ -21,11 +21,12 @@ func CreateDir(dirName string) {
 //write into file
 func WriteFile(dirName string, fileName string, data string) (int, error) {
 
+	//dirName sould ends with "\" or "/" regarding to OS type
 	if !IsFileOrDirExists(dirName) {
 		CreateDir(dirName)
 	}
 
-	file, err := os.Create(dirName + "/" + fileName)
+	file, err := os.Create(dirName + fileName)
 	if err != nil {
 		log.Fatalf("[FAILED!...] Failed creating file: %s", err)
 	}
@@ -34,25 +35,6 @@ func WriteFile(dirName string, fileName string, data string) (int, error) {
 	file.Close()
 
 	return n, err
-}
-
-//set config into CSV
-func SetCSVConfig(fileName string, data [][]string) error {
-	csvFile, err := os.Create(fileName)
-
-	if err != nil {
-		log.Fatalf("[ERROR!...] Failed creating file: %s", err)
-	}
-
-	csvwriter := csv.NewWriter(csvFile)
-	for _, confRow := range data {
-		err = csvwriter.Write(confRow)
-	}
-
-	csvwriter.Flush()
-	csvFile.Close()
-
-	return err
 }
 
 //read config file from CSV
@@ -94,11 +76,12 @@ func DownloadZipFile(dirName string, zipFileName string, body []byte) error {
 		log.Fatal(err)
 	}
 
+	//dirName sould ends with "\" or "/" regarding to OS type
 	if !IsFileOrDirExists(dirName) {
 		CreateDir(dirName)
 	}
 
-	file, err := os.Create(dirName + "/" + zipFileName)
+	file, err := os.Create(dirName + zipFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,7 +117,8 @@ func GetEnvExist(key, fallback string) string {
 
 func SearchFileByPattern(pattern string, dirName string) string {
 
-	matches, err := filepath.Glob(dirName + "/" + pattern)
+	//dirName sould ends with "\" or "/" regarding to OS type
+	matches, err := filepath.Glob(dirName + pattern)
 	if err != nil {
 		fmt.Println(err)
 	}

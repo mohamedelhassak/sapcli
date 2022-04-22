@@ -52,17 +52,7 @@ type DeploymentCancelResp struct {
 }
 
 type DeploymentCreateResp struct {
-	Headers struct {
-		ContentLength string `json:"Content-Length"`
-		ContentType   string `json:"Content-Type"`
-		Host          string `json:"Host"`
-	} `json:"headers"`
-	JSON struct {
-		BuildCode       string `json:"buildCode"`
-		EnvironmentCode string `json:"environmentCode"`
-	} `json:"json"`
-	Origin string `json:"origin"`
-	URL    string `json:"url"`
+	Code string `json:"code"`
 }
 
 func NewDeployCmd() *cobra.Command {
@@ -78,7 +68,7 @@ func NewDeployCmd() *cobra.Command {
 		NewDeployProgressCmd(),
 		NewDeployGetCancellationOptionsCmd(),
 		NewDeployCreateCancellationCmd(),
-		//NewDeployCreateCmd(),
+		NewDeployCreateCmd(),
 	)
 	return cmd
 }
@@ -88,12 +78,13 @@ func NewDeployGetCmd() *cobra.Command {
 		Use:   "get",
 		Short: "get --code=[deploy-code]",
 		Long:  `This command can be used to get deployment`,
+		Args:  cobra.MinimumNArgs(1),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
 			code, _ := cmd.Flags().GetString("code")
 
-			if code != "" && len(args) <= 0 {
+			if len(args) <= 0 {
 
 				body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code)
 				var deployment Deployment
@@ -110,6 +101,7 @@ func NewDeployGetCmd() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().String("code", "", "To get deployment by its code")
+	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
 
@@ -148,7 +140,7 @@ func NewDeployProgressCmd() *cobra.Command {
 
 			code, _ := cmd.Flags().GetString("code")
 
-			if code != "" && len(args) <= 0 {
+			if len(args) <= 0 {
 
 				deploymentProgress := getDeployProgress(code)
 				if deploymentProgress.DeploymentStatus != "" {
@@ -164,6 +156,7 @@ func NewDeployProgressCmd() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().String("code", "", "To get deployment progress by its code")
+	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
 
@@ -177,7 +170,7 @@ func NewDeployGetCancellationOptionsCmd() *cobra.Command {
 
 			code, _ := cmd.Flags().GetString("code")
 
-			if code != "" && len(args) <= 0 {
+			if len(args) <= 0 {
 				body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/cancellationoptions")
 
 				fmt.Println(string(body))
@@ -189,6 +182,7 @@ func NewDeployGetCancellationOptionsCmd() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().String("code", "", "To get deployment cancel options by its code")
+	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
 
@@ -201,10 +195,10 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 
 			code, _ := cmd.Flags().GetString("code")
-			rollbackDatabase, _ := cmd.Flags().GetString("rollbackDatabase")
+			rollbackDatabase, _ := cmd.Flags().GetBool("rollback-database")
 
-			if code != "" && len(args) <= 0 {
-				reqBody, err := json.Marshal(map[string]string{
+			if len(args) <= 0 {
+				reqBody, err := json.Marshal(map[string]bool{
 					"rollbackDatabase": rollbackDatabase,
 				})
 				if err != nil {
@@ -226,14 +220,16 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().String("code", "", "To cancel deployment by its code")
-	cmd.PersistentFlags().Bool("rollbackDatabase", false, "To cancel deployment by its code")
+	cmd.PersistentFlags().Bool("rollback-database", false, "To cancel deployment by its code ,Values [true | false] default (false)")
+
+	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
 
 var deployCreateDesc = `create --build-code=[build-code] 
 		  	 --env=[environment-code]
-		  	 --strategy=[ ROLLING_UPDATE | RECREATE | default: ROLLING_UPDATE] 
-		  	 --database-update-mode=[ NONE | UPDATE | INITIALIZE | default: NONE]`
+		  	 --strategy=[strategy] 
+		  	 --database-update-mode=[database-update-mode]`
 
 // not complete yet !!! catch deploy code returned
 func NewDeployCreateCmd() *cobra.Command {
@@ -268,11 +264,12 @@ func NewDeployCreateCmd() *cobra.Command {
 					fmt.Println(utils.PrettyPrintJSON(deploymentCreateResp))
 				}
 
+				deployCode := deploymentCreateResp.Code
 				isFinished := false
 
 				for !isFinished {
 
-					deploymentProgress := getDeployProgress(env)
+					deploymentProgress := getDeployProgress(deployCode)
 
 					fmt.Println("------------------------------------------------")
 					fmt.Printf("progress: %d\tstatus: %s", deploymentProgress.Percentage, deploymentProgress.DeploymentStatus)
@@ -295,8 +292,11 @@ func NewDeployCreateCmd() *cobra.Command {
 	}
 	cmd.PersistentFlags().String("build-code", "", "build to deploy")
 	cmd.PersistentFlags().String("env", "", "target environment ")
-	cmd.PersistentFlags().String("strategy", "ROLLING_UPDATE", "deployment strategy")
-	cmd.PersistentFlags().String("database-update-mode", "NONE", "database update mode options")
+	cmd.PersistentFlags().String("strategy", "ROLLING_UPDATE", "deployment strategy, Values [ ROLLING_UPDATE | RECREATE ]")
+	cmd.PersistentFlags().String("database-update-mode", "NONE", "database update mode options, Values [ NONE | UPDATE | INITIALIZE ]")
+
+	cmd.MarkPersistentFlagRequired("build-code")
+	cmd.MarkPersistentFlagRequired("env")
 	return cmd
 }
 

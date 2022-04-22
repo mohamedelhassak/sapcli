@@ -5,6 +5,7 @@ import (
 
 	"github.com/mohamedelhassak/sapcli/utils"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"moul.io/banner"
 )
 
@@ -12,7 +13,7 @@ func NewInfoCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "info",
 		Short: "info",
-		Long:  `This command can be used view application info & env`,
+		Long:  `This command can be used view tool info & env`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 {
 				fmt.Println(utils.UnknownCommandMsg("info"))
@@ -27,11 +28,11 @@ func NewInfoCmd() *cobra.Command {
 			fmt.Println("-->ENV VARIABLES")
 			fmt.Println("SAPCLI_WORK_DIR =", WORK_DIR+"\n")
 			fmt.Println("-->FILES & DIRECTORIES")
-			fmt.Println("Config file :", CONF_FILE_NAME)
+			fmt.Println("Config file :", viper.ConfigFileUsed())
 			fmt.Println("build  dir  :", BUILDS_DIR)
 			fmt.Println("logs   dir  :", LOGS_DIR)
 			fmt.Println("")
-			fmt.Println("")
+			fmt.Println()
 		},
 	}
 

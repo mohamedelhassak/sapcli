@@ -10,7 +10,6 @@ import (
 )
 
 var cfgFile string
-var rootCmd = NewRootCmd()
 
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -35,7 +34,7 @@ func init() {
 
 // Execute executes the root command.
 func Execute() error {
-
+	rootCmd := NewRootCmd()
 	return rootCmd.Execute()
 }
 
@@ -55,13 +54,13 @@ func initConfigs() {
 
 	} else {
 
-		CONF_FILE_NAME = utils.SearchFileByPattern(CONF_FILE_NAME_PATTERN, WORK_DIR)
+		defaultConfigFileName := utils.SearchFileByPattern(CONF_FILE_NAME_PATTERN, WORK_DIR)
 		//check if file exist
-		if !utils.IsFileOrDirExists(CONF_FILE_NAME) {
-			log.Fatalf("[ERROR!...] file not found:  %s", CONF_FILE_NAME)
+		if !utils.IsFileOrDirExists(defaultConfigFileName) {
+			log.Fatalf("[ERROR!...] file not found:  %s", defaultConfigFileName)
 		}
 
-		viper.SetConfigFile(CONF_FILE_NAME)
+		viper.SetConfigFile(defaultConfigFileName)
 		fmt.Println("[INFO!...] Using default config file : " + viper.ConfigFileUsed())
 	}
 

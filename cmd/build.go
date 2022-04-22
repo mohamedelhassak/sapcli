@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -43,17 +44,20 @@ type BuildProgress struct {
 	BuildCode     string `json:"buildCode"`
 }
 type BuildCreateResp struct {
-	Headers struct {
-		ContentLength string `json:"Content-Length"`
-		ContentType   string `json:"Content-Type"`
-		Host          string `json:"Host"`
-	} `json:"headers"`
-	JSON struct {
-		Branch string `json:"branch"`
-		Name   string `json:"name"`
-	} `json:"json"`
-	Origin string `json:"origin"`
-	URL    string `json:"url"`
+	Code string `json:"code"`
+}
+
+func isValidArgs(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("Requires at least one arg")
+	}
+
+	if args[0] == "get" || args[0] == "get-all" || args[0] == "logs" || args[0] == "progress" || args[0] == "create" {
+		return nil
+	} else {
+		return errors.New("Invalid argument")
+	}
+	return fmt.Errorf("invalid arg specified: %s", args[0])
 }
 
 func NewBuildCmd() *cobra.Command {
@@ -62,13 +66,14 @@ func NewBuildCmd() *cobra.Command {
 		Aliases: []string{"b"},
 		Short:   "build",
 		Long:    `This command can be used to create/get and show build(s)`,
+		Args:    isValidArgs,
 	}
 	cmd.AddCommand(
 		NewBuildGetCmd(),
 		NewBuildGetAllCmd(),
 		NewBuildProgressCmd(),
 		NewBuildLogsCmd(),
-		//NewBuildCreateCmd(),
+		NewBuildCreateCmd(),
 	)
 	return cmd
 }
@@ -83,7 +88,7 @@ func NewBuildGetCmd() *cobra.Command {
 
 			code, _ := cmd.Flags().GetString("code")
 
-			if code != "" && len(args) <= 0 {
+			if len(args) <= 0 {
 
 				body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code)
 				var build Build
@@ -95,12 +100,13 @@ func NewBuildGetCmd() *cobra.Command {
 				}
 
 			} else {
-				fmt.Println(utils.UnknownCommandMsg("build get"))
+				cmd.Help()
 				return
 			}
 		},
 	}
 	cmd.PersistentFlags().String("code", "", "To get build by its code")
+	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
 
@@ -139,7 +145,7 @@ func NewBuildProgressCmd() *cobra.Command {
 
 			code, _ := cmd.Flags().GetString("code")
 
-			if code != "" && len(args) <= 0 {
+			if len(args) <= 0 {
 
 				buildProgress := getBuildProgress(code)
 				if buildProgress.BuildStatus != "" {
@@ -154,6 +160,7 @@ func NewBuildProgressCmd() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().String("code", "", "To get build progress by its code")
+	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
 
@@ -168,7 +175,7 @@ func NewBuildLogsCmd() *cobra.Command {
 			code, _ := cmd.Flags().GetString("code")
 			zipFileName := "build-" + code + ".zip"
 
-			if code != "" {
+			if len(args) <= 0 {
 
 				body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code+"/logs")
 
@@ -179,7 +186,7 @@ func NewBuildLogsCmd() *cobra.Command {
 					log.Fatalf("[FAILED!...] Failed downloading logs: %s", err)
 				}
 
-				fmt.Println("[FINISHED!...]. Logs saved into " + LOGS_DIR + "/" + zipFileName)
+				fmt.Println("[FINISHED!...]. Logs saved into " + LOGS_DIR + zipFileName)
 
 			} else {
 				fmt.Println(utils.UnknownCommandMsg("build logs"))
@@ -188,6 +195,7 @@ func NewBuildLogsCmd() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().String("code", "", "To get build logs by its code")
+	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
 
@@ -203,7 +211,7 @@ func NewBuildCreateCmd() *cobra.Command {
 			branch, _ := cmd.Flags().GetString("branch")
 			name, _ := cmd.Flags().GetString("name")
 
-			if branch != "" && name != "" && len(args) <= 0 {
+			if len(args) <= 0 {
 				reqBody, err := json.Marshal(map[string]string{
 					"branch": branch,
 					"name":   name,
@@ -221,11 +229,12 @@ func NewBuildCreateCmd() *cobra.Command {
 					fmt.Println(utils.PrettyPrintJSON(buildCreateResp))
 				}
 
+				buildCode := buildCreateResp.Code
 				isFinished := false
 
 				for !isFinished {
 
-					buildProgress := getBuildProgress(branch)
+					buildProgress := getBuildProgress(buildCode)
 
 					fmt.Println("------------------------------------------------")
 					fmt.Printf("progress: %d \ttasks: %d\tstatus: %s", buildProgress.Percentage, buildProgress.NumberOfTasks, buildProgress.BuildStatus)
@@ -236,7 +245,7 @@ func NewBuildCreateCmd() *cobra.Command {
 						if err != nil {
 							log.Fatalf("[FAILED!...] Failed saving build: %s", err)
 						}
-						fmt.Println("\n[FINISHED!...] Build Success " + BUILDS_DIR + "/" + "last_success")
+						fmt.Println("\n[FINISHED!...] Build Success " + BUILDS_DIR + "last_success")
 
 					} else if buildProgress.BuildStatus == "FAILED" {
 						log.Fatalf("[FAILED!...] Build Failed :(")
@@ -252,6 +261,8 @@ func NewBuildCreateCmd() *cobra.Command {
 	}
 	cmd.PersistentFlags().String("branch", "", "Branch to build")
 	cmd.PersistentFlags().String("name", "", "Build's name")
+	cmd.MarkPersistentFlagRequired("branch")
+	cmd.MarkPersistentFlagRequired("name")
 	return cmd
 }
 

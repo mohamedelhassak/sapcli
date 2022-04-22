@@ -39,6 +39,7 @@ func NewConfigShowCmd() *cobra.Command {
 		Use:   "show",
 		Short: "show",
 		Long:  `This command can be used to show subscription & api token`,
+		Args:  cobra.MinimumNArgs(1),
 
 		Run: func(cmd *cobra.Command, args []string) {
 

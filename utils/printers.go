@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"log"
+	"runtime"
 
 	"gopkg.in/yaml.v2"
 )
@@ -40,5 +41,18 @@ func PrettyPrint(i interface{}, extension string) string {
 		return PrettyPrintYAML(i)
 	default:
 		return ""
+	}
+}
+func SlashOrBackslash() string {
+	os := runtime.GOOS
+	switch os {
+	case "windows":
+		return "\\"
+	case "darwin":
+		return "/"
+	case "linux":
+		return "/"
+	default:
+		return "/"
 	}
 }

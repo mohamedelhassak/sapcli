@@ -8,14 +8,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-
-	"gopkg.in/yaml.v2"
 )
 
 //read configs from YAML (not used)
-func readYAMLConfigs(fileName string, cfg *Config) {
-	fmt.Println("[INFO!...] Using default config file :" + CONF_FILE_NAME)
+/*func readYAMLConfigs(fileName string, cfg *Config) {
+	fmt.Println("[INFO!...] Using default config file :" + fileName)
 	f, err := os.Open(fileName)
 	if err != nil {
 		log.Fatalf("[FAILED!...] Failed reading configs: %s", err)
@@ -27,7 +24,7 @@ func readYAMLConfigs(fileName string, cfg *Config) {
 	if err != nil {
 		log.Fatalf("[ERROR!...] Couldn't parse yaml configs: %s", err)
 	}
-}
+}*/
 
 //return http client
 func httpClient() *http.Client {
