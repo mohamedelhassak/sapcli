@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -68,18 +69,22 @@ var od *deployOptions
 var validDeployArgs = []string{"get", "get-all", "cancel", "progress", "create", "get-cancel-opts"}
 
 func isValidDeployArgs(cmd *cobra.Command, args []string) error {
-	return isValidArgs(cmd, validDeployArgs, args)
+	if len(args) != 1 {
+		return errors.New("Requires exactly 1 arg.")
+	}
+	return cobra.OnlyValidArgs(cmd, args)
 }
 
 func NewDeployCmd() *cobra.Command {
 	od = &deployOptions{}
 	cmd := &cobra.Command{
-		Use:     "deploy",
-		Aliases: []string{"d"},
-		Short:   "deploy",
-		Long:    `This command can be used to create/get/cancel and show deployment(s)`,
-		Args:    isValidDeployArgs,
-		Run:     func(cmd *cobra.Command, args []string) {},
+		Use:       "deploy",
+		Aliases:   []string{"d"},
+		Short:     "deploy",
+		Long:      `This command can be used to create/get/cancel and show deployment(s)`,
+		ValidArgs: validDeployArgs,
+		Args:      isValidDeployArgs,
+		Run:       func(cmd *cobra.Command, args []string) {},
 	}
 	cmd.AddCommand(
 		NewDeployGetCmd(),

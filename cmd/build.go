@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -56,18 +57,22 @@ var ob *buildOptions
 var validBuildArgs = []string{"get", "get-all", "logs", "progress", "create"}
 
 func isValidBuildArgs(cmd *cobra.Command, args []string) error {
-	return isValidArgs(cmd, validBuildArgs, args)
+	if len(args) != 1 {
+		return errors.New("Requires exactly 1 arg.")
+	}
+	return cobra.OnlyValidArgs(cmd, args)
 }
 
 func NewBuildCmd() *cobra.Command {
 	ob = &buildOptions{}
 	cmd := &cobra.Command{
-		Use:     "build",
-		Aliases: []string{"b"},
-		Short:   "build",
-		Long:    `This command can be used to create/get and show build(s)`,
-		Args:    isValidBuildArgs,
-		Run:     func(cmd *cobra.Command, args []string) {},
+		Use:       "build",
+		Aliases:   []string{"b"},
+		Short:     "build",
+		Long:      `This command can be used to create/get and show build(s)`,
+		ValidArgs: validBuildArgs,
+		Args:      isValidBuildArgs,
+		Run:       func(cmd *cobra.Command, args []string) {},
 	}
 	cmd.AddCommand(
 		NewBuildGetCmd(),
@@ -84,7 +89,7 @@ func NewBuildGetCmd() *cobra.Command {
 		Use:   "get",
 		Short: "get --code=[build-code]",
 		Long:  `This command can be used to get build`,
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -111,7 +116,7 @@ func NewBuildGetAllCmd() *cobra.Command {
 		Use:   "get-all",
 		Short: "get-all",
 		Long:  `This command can be used to get all builds`,
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -133,7 +138,7 @@ func NewBuildProgressCmd() *cobra.Command {
 		Use:   "progress",
 		Short: "progress --code=[build-code]",
 		Long:  `This command can be used to get build progress`,
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -156,7 +161,7 @@ func NewBuildLogsCmd() *cobra.Command {
 		Use:   "logs",
 		Short: "logs --code=[build-code]",
 		Long:  `This command can be used to get build logs`,
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -187,7 +192,7 @@ func NewBuildCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: "create --branch=[branch] --name=[name]",
 		Long:  `This command can be used to create build`,
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 

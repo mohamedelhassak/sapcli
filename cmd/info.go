@@ -13,7 +13,7 @@ func NewInfoCmd() *cobra.Command {
 		Use:   "info",
 		Short: "info",
 		Long:  `This command can be used view tool info & env`,
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			fmt.Println("SAPCLI is a tool to trigger SAP Cloud APIs")

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -19,15 +20,24 @@ type Config struct {
 
 //init config struct
 var cfg Config
+var validConfigArgs = []string{"show"}
+
+func isValidConfigArgs(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("Requires exactly 1 arg.")
+	}
+	return cobra.OnlyValidArgs(cmd, args)
+}
 
 func NewConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "config",
-		Aliases: []string{"conf"},
-		Short:   "config",
-		Long:    `This command can be used view config`,
-		Example: "",
-		Args:    cobra.ExactArgs(1),
+		Use:       "config",
+		Aliases:   []string{"conf"},
+		Short:     "config",
+		Long:      `This command can be used view config`,
+		Example:   "",
+		ValidArgs: validConfigArgs,
+		Args:      isValidConfigArgs,
 	}
 	cmd.AddCommand(
 		NewConfigShowCmd(),
@@ -40,7 +50,7 @@ func NewConfigShowCmd() *cobra.Command {
 		Use:   "show",
 		Short: "show",
 		Long:  `This command can be used to show subscription & api token`,
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 

@@ -13,7 +13,7 @@ func NewVersionCmd() *cobra.Command {
 		Aliases: []string{"v"},
 		Short:   "Print version number of SAPCLI tool",
 		Long:    `This command can be used get the version number of SAPCLI tool`,
-		Args:    cobra.ExactArgs(0),
+		Args:    cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			fmt.Println(banner.Inline("have fun using sapcli"))
