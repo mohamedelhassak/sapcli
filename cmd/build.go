@@ -47,26 +47,43 @@ type BuildCreateResp struct {
 	Code string `json:"code"`
 }
 
-func isValidArgs(cmd *cobra.Command, args []string) error {
-	if len(args) != 1 {
+type buildOptions struct {
+	code   string
+	name   string
+	branch string
+}
+
+var o *buildOptions
+
+func isValidBuildArgs(cmd *cobra.Command, args []string) error {
+	if len(args) > 1 {
 		return errors.New("Requires at least one arg")
 	}
 
 	if args[0] == "get" || args[0] == "get-all" || args[0] == "logs" || args[0] == "progress" || args[0] == "create" {
 		return nil
 	} else {
-		return errors.New("Invalid argument")
+		return errors.New("Invalid argument: " + args[0])
 	}
-	return fmt.Errorf("invalid arg specified: %s", args[0])
+}
+
+func isValidBuildSubCmdArgs(cmd *cobra.Command, args []string) error {
+	if len(args) > 0 {
+		return errors.New("This command do not have any sub-command!")
+	} else {
+		return nil
+	}
 }
 
 func NewBuildCmd() *cobra.Command {
+	o = &buildOptions{}
 	cmd := &cobra.Command{
 		Use:     "build",
 		Aliases: []string{"b"},
 		Short:   "build",
 		Long:    `This command can be used to create/get and show build(s)`,
-		Args:    isValidArgs,
+		Args:    isValidBuildArgs,
+		Run:     func(cmd *cobra.Command, args []string) {},
 	}
 	cmd.AddCommand(
 		NewBuildGetCmd(),
@@ -83,30 +100,25 @@ func NewBuildGetCmd() *cobra.Command {
 		Use:   "get",
 		Short: "get --code=[build-code]",
 		Long:  `This command can be used to get build`,
+		Args:  isValidBuildSubCmdArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			code, _ := cmd.Flags().GetString("code")
+			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+o.code)
+			var build Build
 
-			if len(args) <= 0 {
-
-				body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code)
-				var build Build
-
-				if err := json.Unmarshal(body, &build); err != nil { // Parse []byte to go struct pointer
-					log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
-				} else {
-					fmt.Println(utils.PrettyPrintJSON(build))
-				}
-
+			if err := json.Unmarshal(body, &build); err != nil { // Parse []byte to go struct pointer
+				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				cmd.Help()
-				return
+				fmt.Println(utils.PrettyPrintJSON(build))
 			}
+
 		},
 	}
-	cmd.PersistentFlags().String("code", "", "To get build by its code")
+
+	cmd.PersistentFlags().StringVar(&o.code, "code", "", "To get build by its code")
 	cmd.MarkPersistentFlagRequired("code")
+
 	return cmd
 }
 
@@ -115,12 +127,9 @@ func NewBuildGetAllCmd() *cobra.Command {
 		Use:   "get-all",
 		Short: "get-all",
 		Long:  `This command can be used to get all builds`,
+		Args:  isValidBuildSubCmdArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 {
-				fmt.Println(utils.UnknownCommandMsg("build get-all"))
-				return
-			}
 
 			body := httpGet(client, SAP_CLOUD_API_URL+"/builds")
 			var builds Builds
@@ -140,26 +149,20 @@ func NewBuildProgressCmd() *cobra.Command {
 		Use:   "progress",
 		Short: "progress --code=[build-code]",
 		Long:  `This command can be used to get build progress`,
+		Args:  isValidBuildSubCmdArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			code, _ := cmd.Flags().GetString("code")
-
-			if len(args) <= 0 {
-
-				buildProgress := getBuildProgress(code)
-				if buildProgress.BuildStatus != "" {
-					fmt.Println("------------------------------------------------")
-					fmt.Printf("progress: %d\ttasks: %d\tstatus: %s", buildProgress.Percentage, buildProgress.NumberOfTasks, buildProgress.BuildStatus)
-				}
-
-			} else {
-				fmt.Println(utils.UnknownCommandMsg("build progress"))
-				return
+			buildProgress := getBuildProgress(o.code)
+			if buildProgress.BuildStatus != "" {
+				fmt.Println("------------------------------------------------")
+				fmt.Printf("progress: %d\ttasks: %d\tstatus: %s", buildProgress.Percentage, buildProgress.NumberOfTasks, buildProgress.BuildStatus)
 			}
+
 		},
 	}
-	cmd.PersistentFlags().String("code", "", "To get build progress by its code")
+
+	cmd.PersistentFlags().StringVar(&o.code, "code", "", "To get build progress by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -169,32 +172,28 @@ func NewBuildLogsCmd() *cobra.Command {
 		Use:   "logs",
 		Short: "logs --code=[build-code]",
 		Long:  `This command can be used to get build logs`,
+		Args:  isValidBuildSubCmdArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			code, _ := cmd.Flags().GetString("code")
-			zipFileName := "build-" + code + ".zip"
+			//code, _ := cmd.Flags().GetString("code")
+			zipFileName := "build-" + o.code + ".zip"
 
-			if len(args) <= 0 {
+			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+o.code+"/logs")
 
-				body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code+"/logs")
+			fmt.Println("[STARTING!...] download logs for build :" + o.code)
 
-				fmt.Println("[STARTING!...] download logs for build :" + code)
-
-				err := utils.DownloadZipFile(LOGS_DIR, zipFileName, body)
-				if err != nil {
-					log.Fatalf("[FAILED!...] Failed downloading logs: %s", err)
-				}
-
-				fmt.Println("[FINISHED!...]. Logs saved into " + LOGS_DIR + zipFileName)
-
-			} else {
-				fmt.Println(utils.UnknownCommandMsg("build logs"))
-				return
+			err := utils.DownloadZipFile(LOGS_DIR, zipFileName, body)
+			if err != nil {
+				log.Fatalf("[FAILED!...] Failed downloading logs: %s", err)
 			}
+
+			fmt.Println("[FINISHED!...]. Logs saved into " + LOGS_DIR + zipFileName)
+
 		},
 	}
-	cmd.PersistentFlags().String("code", "", "To get build logs by its code")
+
+	cmd.PersistentFlags().StringVar(&o.code, "code", "", "To get build logs by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -205,62 +204,56 @@ func NewBuildCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: "create --branch=[branch] --name=[name]",
 		Long:  `This command can be used to create build`,
+		Args:  isValidBuildSubCmdArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			branch, _ := cmd.Flags().GetString("branch")
-			name, _ := cmd.Flags().GetString("name")
-
-			if len(args) <= 0 {
-				reqBody, err := json.Marshal(map[string]string{
-					"branch": branch,
-					"name":   name,
-				})
-				if err != nil {
-					return
-				}
-
-				fmt.Println("[STARTING!...] Build branch " + branch)
-				body := httpPost(client, SAP_CLOUD_API_URL+"/builds", reqBody)
-				var buildCreateResp BuildCreateResp
-				if err := json.Unmarshal(body, &buildCreateResp); err != nil {
-					log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
-				} else {
-					fmt.Println(utils.PrettyPrintJSON(buildCreateResp))
-				}
-
-				buildCode := buildCreateResp.Code
-				isFinished := false
-
-				for !isFinished {
-
-					buildProgress := getBuildProgress(buildCode)
-
-					fmt.Println("------------------------------------------------")
-					fmt.Printf("progress: %d \ttasks: %d\tstatus: %s", buildProgress.Percentage, buildProgress.NumberOfTasks, buildProgress.BuildStatus)
-
-					if buildProgress.BuildStatus == "SUCCESS" {
-						isFinished = true
-						_, err := utils.WriteFile(BUILDS_DIR, "last_success", buildProgress.BuildCode)
-						if err != nil {
-							log.Fatalf("[FAILED!...] Failed saving build: %s", err)
-						}
-						fmt.Println("\n[FINISHED!...] Build Success " + BUILDS_DIR + "last_success")
-
-					} else if buildProgress.BuildStatus == "FAILED" {
-						log.Fatalf("[FAILED!...] Build Failed :(")
-					}
-
-				}
-			} else {
-				fmt.Println(utils.UnknownCommandMsg("build create"))
+			reqBody, err := json.Marshal(map[string]string{
+				"branch": o.branch,
+				"name":   o.name,
+			})
+			if err != nil {
 				return
+			}
+
+			fmt.Println("[STARTING!...] Build branch " + o.branch)
+			body := httpPost(client, SAP_CLOUD_API_URL+"/builds", reqBody)
+			var buildCreateResp BuildCreateResp
+			if err := json.Unmarshal(body, &buildCreateResp); err != nil {
+				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
+			} else {
+				fmt.Println(utils.PrettyPrintJSON(buildCreateResp))
+			}
+
+			buildCode := buildCreateResp.Code
+			isFinished := false
+
+			for !isFinished {
+
+				buildProgress := getBuildProgress(buildCode)
+
+				fmt.Println("------------------------------------------------")
+				fmt.Printf("progress: %d \ttasks: %d\tstatus: %s", buildProgress.Percentage, buildProgress.NumberOfTasks, buildProgress.BuildStatus)
+
+				if buildProgress.BuildStatus == "SUCCESS" {
+					isFinished = true
+					_, err := utils.WriteFile(BUILDS_DIR, "last_success", buildProgress.BuildCode)
+					if err != nil {
+						log.Fatalf("[FAILED!...] Failed saving build: %s", err)
+					}
+					fmt.Println("\n[FINISHED!...] Build Success " + BUILDS_DIR + "last_success")
+
+				} else if buildProgress.BuildStatus == "FAILED" {
+					log.Fatalf("[FAILED!...] Build Failed :(")
+				}
+
 			}
 
 		},
 	}
-	cmd.PersistentFlags().String("branch", "", "Branch to build")
-	cmd.PersistentFlags().String("name", "", "Build's name")
+
+	cmd.PersistentFlags().StringVar(&o.branch, "branch", "", "")
+	cmd.PersistentFlags().StringVar(&o.name, "name", "", "")
 	cmd.MarkPersistentFlagRequired("branch")
 	cmd.MarkPersistentFlagRequired("name")
 	return cmd

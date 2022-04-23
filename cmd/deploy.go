@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -55,12 +56,26 @@ type DeploymentCreateResp struct {
 	Code string `json:"code"`
 }
 
+func isValidDeployArgs(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("Requires at least one arg")
+	}
+
+	if args[0] == "get" || args[0] == "get-all" || args[0] == "cancel" || args[0] == "progress" || args[0] == "get-cancel-opts" {
+		return nil
+	} else {
+		return errors.New("Invalid argument: " + args[0])
+	}
+}
+
 func NewDeployCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "deploy",
 		Aliases: []string{"d"},
 		Short:   "deploy",
 		Long:    `This command can be used to create/get/cancel and show deployment(s)`,
+		Args:    isValidDeployArgs,
+		Run:     func(cmd *cobra.Command, args []string) {},
 	}
 	cmd.AddCommand(
 		NewDeployGetCmd(),
