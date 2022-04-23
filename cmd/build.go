@@ -103,7 +103,7 @@ func NewBuildGetCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&ob.code, "code", "", "To get build by its code")
+	cmd.PersistentFlags().StringVarP(&ob.code, "code", "c", "", "To get build by its code")
 	cmd.MarkPersistentFlagRequired("code")
 
 	return cmd
@@ -149,7 +149,7 @@ func NewBuildProgressCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&ob.code, "code", "", "To get build progress by its code")
+	cmd.PersistentFlags().StringVarP(&ob.code, "code", "c", "", "To get build progress by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -179,7 +179,7 @@ func NewBuildLogsCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&ob.code, "code", "", "To get build logs by its code")
+	cmd.PersistentFlags().StringVarP(&ob.code, "code", "c", "", "To get build logs by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -238,8 +238,8 @@ func NewBuildCreateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&ob.branch, "branch", "", "")
-	cmd.PersistentFlags().StringVar(&ob.name, "name", "", "")
+	cmd.PersistentFlags().StringVarP(&ob.branch, "branch", "b", "", "branch to build")
+	cmd.PersistentFlags().StringVarP(&ob.name, "name", "n", "", "build name")
 	cmd.MarkPersistentFlagRequired("branch")
 	cmd.MarkPersistentFlagRequired("name")
 	return cmd

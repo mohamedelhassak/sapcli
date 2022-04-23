@@ -112,7 +112,7 @@ func NewDeployGetCmd() *cobra.Command {
 			}
 		},
 	}
-	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To get deployment by its code")
+	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To get deployment by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -157,7 +157,7 @@ func NewDeployProgressCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To get deployment progress by its code")
+	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To get deployment progress by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -177,7 +177,7 @@ func NewDeployGetCancellationOptionsCmd() *cobra.Command {
 
 		},
 	}
-	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To get deployment cancel options by its code")
+	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To get deployment cancel options by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -208,8 +208,8 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 
 		},
 	}
-	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To cancel deployment by its code")
-	cmd.PersistentFlags().BoolVar(&od.rollbackDatabase, "rollback-database", false, "To cancel deployment by its code ,Values [true | false] default (false)")
+	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To cancel deployment by its code")
+	cmd.PersistentFlags().BoolVarP(&od.rollbackDatabase, "rollback-database", "r", false, "To cancel deployment by its code ,Values [true | false] default (false)")
 
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
@@ -272,10 +272,10 @@ func NewDeployCreateCmd() *cobra.Command {
 
 		},
 	}
-	cmd.PersistentFlags().StringVar(&od.buildCode, "build-code", "", "build to deploy")
-	cmd.PersistentFlags().StringVar(&od.env, "env", "", "target environment ")
-	cmd.PersistentFlags().StringVar(&od.strategy, "strategy", "ROLLING_UPDATE", "deployment strategy, Values [ ROLLING_UPDATE | RECREATE ]")
-	cmd.PersistentFlags().StringVar(&od.databaseUpdateMode, "database-update-mode", "NONE", "database update mode options, Values [ NONE | UPDATE | INITIALIZE ]")
+	cmd.PersistentFlags().StringVarP(&od.buildCode, "build-code", "c", "", "build to deploy")
+	cmd.PersistentFlags().StringVarP(&od.env, "env", "e", "", "target environment ")
+	cmd.PersistentFlags().StringVarP(&od.strategy, "strategy", "s", "ROLLING_UPDATE", "deployment strategy, Values [ ROLLING_UPDATE | RECREATE ]")
+	cmd.PersistentFlags().StringVarP(&od.databaseUpdateMode, "database-update-mode", "m", "NONE", "database update mode options, Values [ NONE | UPDATE | INITIALIZE ]")
 
 	cmd.MarkPersistentFlagRequired("build-code")
 	cmd.MarkPersistentFlagRequired("env")
