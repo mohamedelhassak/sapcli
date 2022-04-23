@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -54,17 +53,10 @@ type buildOptions struct {
 }
 
 var ob *buildOptions
+var validBuildArgs = []string{"get", "get-all", "logs", "progress", "create"}
 
 func isValidBuildArgs(cmd *cobra.Command, args []string) error {
-	if len(args) > 1 {
-		return errors.New("Requires at least one arg")
-	}
-
-	if args[0] == "get" || args[0] == "get-all" || args[0] == "logs" || args[0] == "progress" || args[0] == "create" {
-		return nil
-	} else {
-		return errors.New("Invalid argument: " + args[0])
-	}
+	return isValidArgs(cmd, validBuildArgs, args)
 }
 
 func NewBuildCmd() *cobra.Command {
@@ -92,7 +84,7 @@ func NewBuildGetCmd() *cobra.Command {
 		Use:   "get",
 		Short: "get --code=[build-code]",
 		Long:  `This command can be used to get build`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -119,7 +111,7 @@ func NewBuildGetAllCmd() *cobra.Command {
 		Use:   "get-all",
 		Short: "get-all",
 		Long:  `This command can be used to get all builds`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -141,7 +133,7 @@ func NewBuildProgressCmd() *cobra.Command {
 		Use:   "progress",
 		Short: "progress --code=[build-code]",
 		Long:  `This command can be used to get build progress`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -164,7 +156,7 @@ func NewBuildLogsCmd() *cobra.Command {
 		Use:   "logs",
 		Short: "logs --code=[build-code]",
 		Long:  `This command can be used to get build logs`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -195,7 +187,7 @@ func NewBuildCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: "create --branch=[branch] --name=[name]",
 		Long:  `This command can be used to create build`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 

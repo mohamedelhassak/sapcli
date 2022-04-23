@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -66,17 +65,10 @@ type deployOptions struct {
 }
 
 var od *deployOptions
+var validDeployArgs = []string{"get", "get-all", "cancel", "progress", "create", "get-cancel-opts"}
 
 func isValidDeployArgs(cmd *cobra.Command, args []string) error {
-	if len(args) != 1 {
-		return errors.New("Requires at least one arg")
-	}
-
-	if args[0] == "get" || args[0] == "get-all" || args[0] == "cancel" || args[0] == "progress" || args[0] == "get-cancel-opts" {
-		return nil
-	} else {
-		return errors.New("Invalid argument: " + args[0])
-	}
+	return isValidArgs(cmd, validDeployArgs, args)
 }
 
 func NewDeployCmd() *cobra.Command {
@@ -105,7 +97,7 @@ func NewDeployGetCmd() *cobra.Command {
 		Use:   "get",
 		Short: "get --code=[deploy-code]",
 		Long:  `This command can be used to get deployment`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -128,7 +120,7 @@ func NewDeployGetAllCmd() *cobra.Command {
 		Use:   "get-all",
 		Short: "get-all",
 		Long:  `This command can be used to get all deployments`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -150,7 +142,7 @@ func NewDeployProgressCmd() *cobra.Command {
 		Use:   "progress",
 		Short: "progress --code=[deploy-code]",
 		Long:  `This command can be used to get deploy progress`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -173,7 +165,7 @@ func NewDeployGetCancellationOptionsCmd() *cobra.Command {
 		Use:   "get-cancel-opts",
 		Short: "get-cancel-opts --code=[deploy-code]",
 		Long:  `This command can be used to get deployment cancellation options`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -193,7 +185,7 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 		Use:   "cancel",
 		Short: "cancel --code=[deploy-code] --rollbackDatabase=[true | false | default: false]",
 		Long:  `This command can be used to cancel a deployment`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -232,7 +224,7 @@ func NewDeployCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: deployCreateDesc,
 		Long:  `This command can be used to create a deployment`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 

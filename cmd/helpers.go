@@ -8,6 +8,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/mohamedelhassak/sapcli/utils"
+	"github.com/spf13/cobra"
 )
 
 //read configs from YAML (not used)
@@ -105,4 +108,17 @@ func httpPost(client *http.Client, url string, reqBody []byte) []byte {
 		log.Fatalf("[ERROR!...]Couldn't parse response body. %+v", err)
 	}
 	return body
+}
+
+//validate command args
+func isValidArgs(cmd *cobra.Command, ValidArgs []string, args []string) error {
+	if len(args) > 1 {
+		return errors.New("Requires at least one arg")
+	}
+
+	if utils.Contains(ValidArgs, args[0]) {
+		return nil
+	} else {
+		return errors.New("Invalid argument: " + args[0])
+	}
 }

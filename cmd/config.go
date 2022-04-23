@@ -27,6 +27,7 @@ func NewConfigCmd() *cobra.Command {
 		Short:   "config",
 		Long:    `This command can be used view config`,
 		Example: "",
+		Args:    cobra.ExactArgs(1),
 	}
 	cmd.AddCommand(
 		NewConfigShowCmd(),
@@ -39,14 +40,9 @@ func NewConfigShowCmd() *cobra.Command {
 		Use:   "show",
 		Short: "show",
 		Long:  `This command can be used to show subscription & api token`,
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
-
-			if len(args) > 0 {
-				fmt.Println(utils.UnknownCommandMsg("config show"))
-				return
-			}
 
 			fileName := viper.ConfigFileUsed()
 			extension := filepath.Ext(fileName)

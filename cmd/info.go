@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mohamedelhassak/sapcli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"moul.io/banner"
@@ -14,11 +13,8 @@ func NewInfoCmd() *cobra.Command {
 		Use:   "info",
 		Short: "info",
 		Long:  `This command can be used view tool info & env`,
+		Args:  cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 {
-				fmt.Println(utils.UnknownCommandMsg("info"))
-				return
-			}
 
 			fmt.Println("SAPCLI is a tool to trigger SAP Cloud APIs")
 			fmt.Println(banner.Inline("have fun using sapcli"))
