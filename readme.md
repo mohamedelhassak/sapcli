@@ -2,7 +2,6 @@
 A sample SAP CLI implementation in Go
 
 [![GitHub release](https://img.shields.io/github/release/moul/banner.svg)](https://github.com/mohamedelhassak/sapcli/releases)
-[![License]](https://github.com/mohamedelhassak/sapcli/blob/main/LICENSE)
 ![Made by Mohamed El hassak](https://img.shields.io/badge/made%20by-Mohamed%20El%20hassak-blue.svg?style=flat)
 
 ## One Step Before Go 🙂 <a name="requis"></a>
