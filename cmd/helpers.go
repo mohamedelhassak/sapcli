@@ -122,3 +122,11 @@ func isValidArgs(cmd *cobra.Command, ValidArgs []string, args []string) error {
 		return errors.New("Invalid argument: " + args[0])
 	}
 }
+
+//return error if more than one arg passed
+func isOneAndOnlyValidArgs(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("\"" + cmd.CommandPath() + "\" Requires exactly 1 arg.")
+	}
+	return cobra.OnlyValidArgs(cmd, args)
+}

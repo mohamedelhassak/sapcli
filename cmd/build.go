@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -61,23 +60,17 @@ type buildOptions struct {
 var ob *buildOptions
 var validBuildArgs = []string{"get", "get-all", "logs", "progress", "create"}
 
-func isValidBuildArgs(cmd *cobra.Command, args []string) error {
-	if len(args) != 1 {
-		return errors.New("Requires exactly 1 arg.")
-	}
-	return cobra.OnlyValidArgs(cmd, args)
-}
-
 func NewBuildCmd() *cobra.Command {
 	ob = &buildOptions{}
 	cmd := &cobra.Command{
-		Use:       "build",
-		Aliases:   []string{"b"},
-		Short:     "build",
-		Long:      `This command can be used to create/get and show build(s)`,
-		ValidArgs: validBuildArgs,
-		Args:      isValidBuildArgs,
-		Run:       func(cmd *cobra.Command, args []string) {},
+		Use:                   "build [command]",
+		Aliases:               []string{"b"},
+		Short:                 "build",
+		Long:                  `This command can be used to create/get and show build(s)`,
+		ValidArgs:             validBuildArgs,
+		Args:                  isOneAndOnlyValidArgs,
+		DisableFlagsInUseLine: true,
+		Run:                   func(cmd *cobra.Command, args []string) {},
 	}
 	cmd.AddCommand(
 		NewBuildGetCmd(),

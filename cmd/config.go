@@ -5,7 +5,6 @@ This file is part of CLI application SAPCLI.
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -26,22 +25,17 @@ type Config struct {
 var cfg Config
 var validConfigArgs = []string{"show"}
 
-func isValidConfigArgs(cmd *cobra.Command, args []string) error {
-	if len(args) != 1 {
-		return errors.New("Requires exactly 1 arg.")
-	}
-	return cobra.OnlyValidArgs(cmd, args)
-}
-
 func NewConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:       "config",
-		Aliases:   []string{"conf"},
-		Short:     "config",
-		Long:      `This command can be used view config`,
-		Example:   "",
-		ValidArgs: validConfigArgs,
-		Args:      isValidConfigArgs,
+		Use:                   "config [command]",
+		Aliases:               []string{"conf"},
+		Short:                 "config",
+		Long:                  `This command can be used view config`,
+		Example:               "",
+		ValidArgs:             validConfigArgs,
+		DisableFlagsInUseLine: true,
+		Args:                  isOneAndOnlyValidArgs,
+		Run:                   func(cmd *cobra.Command, args []string) {},
 	}
 	cmd.AddCommand(
 		NewConfigShowCmd(),
