@@ -1,3 +1,8 @@
+/*
+Copyright © 2022
+This file is part of CLI application SAPCLI.
+*/
+
 package cmd
 
 import (

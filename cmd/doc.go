@@ -1,4 +1,7 @@
-// Copyright © 2022 Manfred Mohamed El hassak
+/*
+Copyright © 2022
+This file is part of CLI application SAPCLI.
+*/
 
 // message from the author:
 //	+--------------------------------------------------------------+
