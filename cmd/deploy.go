@@ -56,6 +56,17 @@ type DeploymentCreateResp struct {
 	Code string `json:"code"`
 }
 
+type deployOptions struct {
+	code               string
+	rollbackDatabase   bool
+	buildCode          string
+	env                string
+	strategy           string
+	databaseUpdateMode string
+}
+
+var od *deployOptions
+
 func isValidDeployArgs(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("Requires at least one arg")
@@ -69,6 +80,7 @@ func isValidDeployArgs(cmd *cobra.Command, args []string) error {
 }
 
 func NewDeployCmd() *cobra.Command {
+	od = &deployOptions{}
 	cmd := &cobra.Command{
 		Use:     "deploy",
 		Aliases: []string{"d"},
@@ -93,29 +105,20 @@ func NewDeployGetCmd() *cobra.Command {
 		Use:   "get",
 		Short: "get --code=[deploy-code]",
 		Long:  `This command can be used to get deployment`,
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			code, _ := cmd.Flags().GetString("code")
-
-			if len(args) <= 0 {
-
-				body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code)
-				var deployment Deployment
-				if err := json.Unmarshal(body, &deployment); err != nil { // Parse []byte to go struct pointer
-					log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
-				} else {
-					fmt.Println(utils.PrettyPrintJSON(deployment))
-				}
-
+			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code)
+			var deployment Deployment
+			if err := json.Unmarshal(body, &deployment); err != nil { // Parse []byte to go struct pointer
+				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.UnknownCommandMsg("deploy get"))
-				return
+				fmt.Println(utils.PrettyPrintJSON(deployment))
 			}
 		},
 	}
-	cmd.PersistentFlags().String("code", "", "To get deployment by its code")
+	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To get deployment by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -125,12 +128,9 @@ func NewDeployGetAllCmd() *cobra.Command {
 		Use:   "get-all",
 		Short: "get-all",
 		Long:  `This command can be used to get all deployments`,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 {
-				fmt.Println(utils.UnknownCommandMsg("deploy get-all"))
-				return
-			}
 
 			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments")
 
@@ -150,27 +150,20 @@ func NewDeployProgressCmd() *cobra.Command {
 		Use:   "progress",
 		Short: "progress --code=[deploy-code]",
 		Long:  `This command can be used to get deploy progress`,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			code, _ := cmd.Flags().GetString("code")
-
-			if len(args) <= 0 {
-
-				deploymentProgress := getDeployProgress(code)
-				if deploymentProgress.DeploymentStatus != "" {
-					fmt.Println("------------------------------------------------")
-					fmt.Printf("progress: %d\tstatus: %s", deploymentProgress.Percentage, deploymentProgress.DeploymentStatus)
-				}
-
-			} else {
-				fmt.Println(utils.UnknownCommandMsg("deploy progress"))
-				return
+			deploymentProgress := getDeployProgress(od.code)
+			if deploymentProgress.DeploymentStatus != "" {
+				fmt.Println("------------------------------------------------")
+				fmt.Printf("progress: %d\tstatus: %s", deploymentProgress.Percentage, deploymentProgress.DeploymentStatus)
 			}
+
 		},
 	}
 
-	cmd.PersistentFlags().String("code", "", "To get deployment progress by its code")
+	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To get deployment progress by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -180,23 +173,17 @@ func NewDeployGetCancellationOptionsCmd() *cobra.Command {
 		Use:   "get-cancel-opts",
 		Short: "get-cancel-opts --code=[deploy-code]",
 		Long:  `This command can be used to get deployment cancellation options`,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			code, _ := cmd.Flags().GetString("code")
+			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellationoptions")
 
-			if len(args) <= 0 {
-				body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/cancellationoptions")
+			fmt.Println(string(body))
 
-				fmt.Println(string(body))
-
-			} else {
-				fmt.Println(utils.UnknownCommandMsg("deploy get-cancel-opts"))
-				return
-			}
 		},
 	}
-	cmd.PersistentFlags().String("code", "", "To get deployment cancel options by its code")
+	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To get deployment cancel options by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -206,36 +193,29 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 		Use:   "cancel",
 		Short: "cancel --code=[deploy-code] --rollbackDatabase=[true | false | default: false]",
 		Long:  `This command can be used to cancel a deployment`,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			code, _ := cmd.Flags().GetString("code")
-			rollbackDatabase, _ := cmd.Flags().GetBool("rollback-database")
-
-			if len(args) <= 0 {
-				reqBody, err := json.Marshal(map[string]bool{
-					"rollbackDatabase": rollbackDatabase,
-				})
-				if err != nil {
-					return
-				}
-
-				body := httpPost(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/cancellation", reqBody)
-				var deploymentCancelResp DeploymentCancelResp
-				if err := json.Unmarshal(body, &deploymentCancelResp); err != nil { // Parse []byte to go struct pointer
-					log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
-				} else {
-					fmt.Println(utils.PrettyPrintJSON(deploymentCancelResp))
-				}
-
-			} else {
-				fmt.Println(utils.UnknownCommandMsg("deploy cancel"))
+			reqBody, err := json.Marshal(map[string]bool{
+				"rollbackDatabase": od.rollbackDatabase,
+			})
+			if err != nil {
 				return
 			}
+
+			body := httpPost(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellation", reqBody)
+			var deploymentCancelResp DeploymentCancelResp
+			if err := json.Unmarshal(body, &deploymentCancelResp); err != nil { // Parse []byte to go struct pointer
+				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
+			} else {
+				fmt.Println(utils.PrettyPrintJSON(deploymentCancelResp))
+			}
+
 		},
 	}
-	cmd.PersistentFlags().String("code", "", "To cancel deployment by its code")
-	cmd.PersistentFlags().Bool("rollback-database", false, "To cancel deployment by its code ,Values [true | false] default (false)")
+	cmd.PersistentFlags().StringVar(&od.code, "code", "", "To cancel deployment by its code")
+	cmd.PersistentFlags().BoolVar(&od.rollbackDatabase, "rollback-database", false, "To cancel deployment by its code ,Values [true | false] default (false)")
 
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
@@ -252,63 +232,56 @@ func NewDeployCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: deployCreateDesc,
 		Long:  `This command can be used to create a deployment`,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			buildCode, _ := cmd.Flags().GetString("build-code")
-			env, _ := cmd.Flags().GetString("env")
-			strategy, _ := cmd.Flags().GetString("strategy")
-			databaseUpdateMode, _ := cmd.Flags().GetString("database-update-mode")
 
-			if buildCode != "" && env != "" && len(args) <= 0 {
-				reqBody, err := json.Marshal(map[string]string{
-					"buildCode":          buildCode,
-					"databaseUpdateMode": databaseUpdateMode,
-					"environmentCode":    env,
-					"strategy":           strategy,
-				})
-				if err != nil {
-					return
-				}
-
-				fmt.Println("[STARTING!...] Deploying build " + buildCode)
-				body := httpPost(client, SAP_CLOUD_API_URL+"/deployments", reqBody)
-				var deploymentCreateResp DeploymentCreateResp
-				if err := json.Unmarshal(body, &deploymentCreateResp); err != nil {
-					log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
-				} else {
-					fmt.Println(utils.PrettyPrintJSON(deploymentCreateResp))
-				}
-
-				deployCode := deploymentCreateResp.Code
-				isFinished := false
-
-				for !isFinished {
-
-					deploymentProgress := getDeployProgress(deployCode)
-
-					fmt.Println("------------------------------------------------")
-					fmt.Printf("progress: %d\tstatus: %s", deploymentProgress.Percentage, deploymentProgress.DeploymentStatus)
-
-					if deploymentProgress.DeploymentStatus == "DEPLOYED" {
-						isFinished = true
-
-						fmt.Println("\n[FINISHED!...] Deployment Success: " + deploymentProgress.DeploymentCode)
-
-					} else if deploymentProgress.DeploymentStatus == "FAILED" {
-						log.Fatalf("[FAILED!...] Deploy Failed :(")
-					}
-
-				}
-			} else {
-				fmt.Println(utils.UnknownCommandMsg("deploy create"))
+			reqBody, err := json.Marshal(map[string]string{
+				"buildCode":          od.buildCode,
+				"databaseUpdateMode": od.databaseUpdateMode,
+				"environmentCode":    od.env,
+				"strategy":           od.strategy,
+			})
+			if err != nil {
 				return
 			}
+
+			fmt.Println("[STARTING!...] Deploying build " + od.buildCode)
+			body := httpPost(client, SAP_CLOUD_API_URL+"/deployments", reqBody)
+			var deploymentCreateResp DeploymentCreateResp
+			if err := json.Unmarshal(body, &deploymentCreateResp); err != nil {
+				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
+			} else {
+				fmt.Println(utils.PrettyPrintJSON(deploymentCreateResp))
+			}
+
+			deployCode := deploymentCreateResp.Code
+			isFinished := false
+
+			for !isFinished {
+
+				deploymentProgress := getDeployProgress(deployCode)
+
+				fmt.Println("------------------------------------------------")
+				fmt.Printf("progress: %d\tstatus: %s", deploymentProgress.Percentage, deploymentProgress.DeploymentStatus)
+
+				if deploymentProgress.DeploymentStatus == "DEPLOYED" {
+					isFinished = true
+
+					fmt.Println("\n[FINISHED!...] Deployment Success: " + deploymentProgress.DeploymentCode)
+
+				} else if deploymentProgress.DeploymentStatus == "FAILED" {
+					log.Fatalf("[FAILED!...] Deploy Failed :(")
+				}
+
+			}
+
 		},
 	}
-	cmd.PersistentFlags().String("build-code", "", "build to deploy")
-	cmd.PersistentFlags().String("env", "", "target environment ")
-	cmd.PersistentFlags().String("strategy", "ROLLING_UPDATE", "deployment strategy, Values [ ROLLING_UPDATE | RECREATE ]")
-	cmd.PersistentFlags().String("database-update-mode", "NONE", "database update mode options, Values [ NONE | UPDATE | INITIALIZE ]")
+	cmd.PersistentFlags().StringVar(&od.buildCode, "build-code", "", "build to deploy")
+	cmd.PersistentFlags().StringVar(&od.env, "env", "", "target environment ")
+	cmd.PersistentFlags().StringVar(&od.strategy, "strategy", "ROLLING_UPDATE", "deployment strategy, Values [ ROLLING_UPDATE | RECREATE ]")
+	cmd.PersistentFlags().StringVar(&od.databaseUpdateMode, "database-update-mode", "NONE", "database update mode options, Values [ NONE | UPDATE | INITIALIZE ]")
 
 	cmd.MarkPersistentFlagRequired("build-code")
 	cmd.MarkPersistentFlagRequired("env")

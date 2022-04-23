@@ -53,7 +53,7 @@ type buildOptions struct {
 	branch string
 }
 
-var o *buildOptions
+var ob *buildOptions
 
 func isValidBuildArgs(cmd *cobra.Command, args []string) error {
 	if len(args) > 1 {
@@ -67,16 +67,8 @@ func isValidBuildArgs(cmd *cobra.Command, args []string) error {
 	}
 }
 
-func isValidBuildSubCmdArgs(cmd *cobra.Command, args []string) error {
-	if len(args) > 0 {
-		return errors.New("This command do not have any sub-command!")
-	} else {
-		return nil
-	}
-}
-
 func NewBuildCmd() *cobra.Command {
-	o = &buildOptions{}
+	ob = &buildOptions{}
 	cmd := &cobra.Command{
 		Use:     "build",
 		Aliases: []string{"b"},
@@ -100,11 +92,11 @@ func NewBuildGetCmd() *cobra.Command {
 		Use:   "get",
 		Short: "get --code=[build-code]",
 		Long:  `This command can be used to get build`,
-		Args:  isValidBuildSubCmdArgs,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+o.code)
+			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+ob.code)
 			var build Build
 
 			if err := json.Unmarshal(body, &build); err != nil { // Parse []byte to go struct pointer
@@ -116,7 +108,7 @@ func NewBuildGetCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&o.code, "code", "", "To get build by its code")
+	cmd.PersistentFlags().StringVar(&ob.code, "code", "", "To get build by its code")
 	cmd.MarkPersistentFlagRequired("code")
 
 	return cmd
@@ -127,7 +119,7 @@ func NewBuildGetAllCmd() *cobra.Command {
 		Use:   "get-all",
 		Short: "get-all",
 		Long:  `This command can be used to get all builds`,
-		Args:  isValidBuildSubCmdArgs,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -149,11 +141,11 @@ func NewBuildProgressCmd() *cobra.Command {
 		Use:   "progress",
 		Short: "progress --code=[build-code]",
 		Long:  `This command can be used to get build progress`,
-		Args:  isValidBuildSubCmdArgs,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			buildProgress := getBuildProgress(o.code)
+			buildProgress := getBuildProgress(ob.code)
 			if buildProgress.BuildStatus != "" {
 				fmt.Println("------------------------------------------------")
 				fmt.Printf("progress: %d\ttasks: %d\tstatus: %s", buildProgress.Percentage, buildProgress.NumberOfTasks, buildProgress.BuildStatus)
@@ -162,7 +154,7 @@ func NewBuildProgressCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&o.code, "code", "", "To get build progress by its code")
+	cmd.PersistentFlags().StringVar(&ob.code, "code", "", "To get build progress by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -172,16 +164,15 @@ func NewBuildLogsCmd() *cobra.Command {
 		Use:   "logs",
 		Short: "logs --code=[build-code]",
 		Long:  `This command can be used to get build logs`,
-		Args:  isValidBuildSubCmdArgs,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
 			//code, _ := cmd.Flags().GetString("code")
-			zipFileName := "build-" + o.code + ".zip"
+			zipFileName := "build-" + ob.code + ".zip"
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+o.code+"/logs")
-
-			fmt.Println("[STARTING!...] download logs for build :" + o.code)
+			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+ob.code+"/logs")
+			fmt.Println("[STARTING!...] download logs for build :" + ob.code)
 
 			err := utils.DownloadZipFile(LOGS_DIR, zipFileName, body)
 			if err != nil {
@@ -193,7 +184,7 @@ func NewBuildLogsCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&o.code, "code", "", "To get build logs by its code")
+	cmd.PersistentFlags().StringVar(&ob.code, "code", "", "To get build logs by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -204,19 +195,19 @@ func NewBuildCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: "create --branch=[branch] --name=[name]",
 		Long:  `This command can be used to create build`,
-		Args:  isValidBuildSubCmdArgs,
+		Args:  cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
 			reqBody, err := json.Marshal(map[string]string{
-				"branch": o.branch,
-				"name":   o.name,
+				"branch": ob.branch,
+				"name":   ob.name,
 			})
 			if err != nil {
 				return
 			}
 
-			fmt.Println("[STARTING!...] Build branch " + o.branch)
+			fmt.Println("[STARTING!...] Build branch " + ob.branch)
 			body := httpPost(client, SAP_CLOUD_API_URL+"/builds", reqBody)
 			var buildCreateResp BuildCreateResp
 			if err := json.Unmarshal(body, &buildCreateResp); err != nil {
@@ -252,8 +243,8 @@ func NewBuildCreateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&o.branch, "branch", "", "")
-	cmd.PersistentFlags().StringVar(&o.name, "name", "", "")
+	cmd.PersistentFlags().StringVar(&ob.branch, "branch", "", "")
+	cmd.PersistentFlags().StringVar(&ob.name, "name", "", "")
 	cmd.MarkPersistentFlagRequired("branch")
 	cmd.MarkPersistentFlagRequired("name")
 	return cmd
