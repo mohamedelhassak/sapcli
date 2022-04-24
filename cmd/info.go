@@ -15,8 +15,8 @@ import (
 func NewInfoCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                   "info",
-		Short:                 "info",
-		Long:                  `This command can be used view tool info & env`,
+		Short:                 "Show info about SAPCLI tool",
+		Long:                  `This command can be used view SAPCLI tool info & env`,
 		Args:                  cobra.NoArgs,
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {

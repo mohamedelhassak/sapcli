@@ -29,12 +29,12 @@ func NewConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                   "config [command]",
 		Aliases:               []string{"conf"},
-		Short:                 "config",
+		Short:                 "Config",
 		Long:                  `This command can be used view config`,
 		Example:               "",
 		ValidArgs:             validConfigArgs,
 		DisableFlagsInUseLine: true,
-		Args:                  isOneAndOnlyValidArgs,
+		Args:                  utils.IsOneAndOnlyValidArgs,
 		Run:                   func(cmd *cobra.Command, args []string) {},
 	}
 	cmd.AddCommand(
@@ -46,7 +46,7 @@ func NewConfigCmd() *cobra.Command {
 func NewConfigShowCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
-		Short: "show",
+		Short: "show config",
 		Long:  `This command can be used to show subscription & api token`,
 		Args:  cobra.NoArgs,
 

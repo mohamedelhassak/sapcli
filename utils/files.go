@@ -2,13 +2,10 @@ package utils
 
 import (
 	"bytes"
-	"encoding/csv"
-	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 //create directory
@@ -35,37 +32,6 @@ func WriteFile(dirName string, fileName string, data string) (int, error) {
 	file.Close()
 
 	return n, err
-}
-
-//read config file from CSV
-func ReadCSVConfig(filePath string) (map[string]string, error) {
-
-	// read csv file
-	csvfile, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	defer csvfile.Close()
-	csvfile.Seek(0, 0)
-	reader := csv.NewReader(csvfile)
-	reader.Comma = '|'
-
-	rawCSVdata, err := reader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-	dataMap := make(map[string]string)
-
-	for _, record := range rawCSVdata {
-
-		data := strings.Split(record[0], ",")
-
-		dataMap[data[0]] = strings.TrimSpace(data[1])
-
-	}
-
-	return dataMap, err
 }
 
 //download & save .zip file
@@ -106,11 +72,11 @@ func IsFileOrDirExists(path string) bool {
 	return false
 }
 
-//check & retuen env
+//check & retuen env if exist
 func GetEnvExist(key, fallback string) string {
 	val, isPresent := os.LookupEnv(key)
-	if isPresent == false && val == "" {
-		log.Println(fallback)
+	if !isPresent && val == "" {
+		log.Fatalln(fallback)
 	}
 	return val
 }
@@ -120,12 +86,12 @@ func SearchFileByPattern(pattern string, dirName string) string {
 	//dirName sould ends with "\" or "/" regarding to OS type
 	matches, err := filepath.Glob(dirName + pattern)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("[ERROR!...] %v", err)
 	}
 	if len(matches) > 1 {
-		log.Fatalf("[ERROR!...] More than one config file found")
+		log.Fatalf("[ERROR!...] %d config file(s) found, accepts 1", len(matches))
+	} else if len(matches) == 0 {
+		log.Fatalf("[ERROR!...] No config file found, accepts 1 but found 0")
 	}
-
-	fmt.Println("[INFO!...] Config file found: " + matches[0])
 	return matches[0]
 }

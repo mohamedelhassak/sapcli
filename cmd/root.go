@@ -21,14 +21,14 @@ func NewRootCmd() *cobra.Command {
 		Short: "sapcli: A sample CLI to build and deploy CX Hybris to SAP Cloud",
 		Long:  `sapcli: A sample CLI to build and deploy CX Hybris to SAP Cloud.`,
 	}
-	cmd.CompletionOptions.DisableDefaultCmd = true
+	cmd.CompletionOptions.DisableDefaultCmd = false
 	cmd.AddCommand(
 		NewInfoCmd(),
 		NewVersionCmd(),
 		NewConfigCmd(),
 		NewBuildCmd(),
 		NewDeployCmd())
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "To set config file, default is $SAPCLI_WORK_DIR/.config.yaml")
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "To set config file,  (default : $SAPCLI_WORK_DIR/.config.[json | yaml | yml])")
 	return cmd
 }
 
@@ -38,8 +38,7 @@ func init() {
 
 // Execute executes the root command.
 func Execute() error {
-	rootCmd := NewRootCmd()
-	return rootCmd.Execute()
+	return NewRootCmd().Execute()
 }
 
 //set custom config file if --config flag passed in cli

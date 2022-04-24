@@ -69,17 +69,17 @@ type deployOptions struct {
 }
 
 var od *deployOptions
-var validDeployArgs = []string{"get", "get-all", "cancel", "progress", "create", "get-cancel-opts"}
+var validDeployArgs = []string{"get", "getAll", "cancel", "progress", "create", "getCancelOpts"}
 
 func NewDeployCmd() *cobra.Command {
 	od = &deployOptions{}
 	cmd := &cobra.Command{
 		Use:                   "deploy [command]",
 		Aliases:               []string{"d"},
-		Short:                 "deploy",
+		Short:                 "Trigger and manage deployment on SAP Cloud",
 		Long:                  `This command can be used to create/get/cancel and show deployment(s)`,
 		ValidArgs:             validDeployArgs,
-		Args:                  isOneAndOnlyValidArgs,
+		Args:                  utils.IsOneAndOnlyValidArgs,
 		DisableFlagsInUseLine: true,
 		Run:                   func(cmd *cobra.Command, args []string) {},
 	}
@@ -103,7 +103,7 @@ func NewDeployGetCmd() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code)
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code, API_TOKEN)
 			var deployment Deployment
 			if err := json.Unmarshal(body, &deployment); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
@@ -119,14 +119,14 @@ func NewDeployGetCmd() *cobra.Command {
 
 func NewDeployGetAllCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-all",
-		Short: "get-all",
+		Use:   "getAll",
+		Short: "getAll",
 		Long:  `This command can be used to get all deployments`,
 		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments")
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments", API_TOKEN)
 
 			var deployments Deployments
 			if err := json.Unmarshal(body, &deployments); err != nil { // Parse []byte to go struct pointer
@@ -164,14 +164,15 @@ func NewDeployProgressCmd() *cobra.Command {
 
 func NewDeployGetCancellationOptionsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-cancel-opts",
-		Short: "get-cancel-opts --code=[deploy-code]",
-		Long:  `This command can be used to get deployment cancellation options`,
-		Args:  cobra.ExactArgs(0),
+		Use:     "getCancelOpts",
+		Aliases: []string{"getCO"},
+		Short:   "getCancelOpts --code=[deploy-code]",
+		Long:    `This command can be used to get deployment cancellation options`,
+		Args:    cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellationoptions")
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellationoptions", API_TOKEN)
 
 			fmt.Println(string(body))
 
@@ -198,7 +199,7 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 				return
 			}
 
-			body := httpPost(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellation", reqBody)
+			body := utils.HttpPost(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellation", API_TOKEN, reqBody)
 			var deploymentCancelResp DeploymentCancelResp
 			if err := json.Unmarshal(body, &deploymentCancelResp); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
@@ -241,7 +242,7 @@ func NewDeployCreateCmd() *cobra.Command {
 			}
 
 			fmt.Println("[STARTING!...] Deploying build " + od.buildCode)
-			body := httpPost(client, SAP_CLOUD_API_URL+"/deployments", reqBody)
+			body := utils.HttpPost(client, SAP_CLOUD_API_URL+"/deployments", API_TOKEN, reqBody)
 			var deploymentCreateResp DeploymentCreateResp
 			if err := json.Unmarshal(body, &deploymentCreateResp); err != nil {
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
@@ -257,7 +258,7 @@ func NewDeployCreateCmd() *cobra.Command {
 				deploymentProgress := getDeployProgress(deployCode)
 
 				fmt.Println("------------------------------------------------")
-				fmt.Printf("progress: %d\tstatus: %s", deploymentProgress.Percentage, deploymentProgress.DeploymentStatus)
+				fmt.Printf("status: %s\tprogress: %d", deploymentProgress.DeploymentStatus, deploymentProgress.Percentage)
 
 				if deploymentProgress.DeploymentStatus == "DEPLOYED" {
 					isFinished = true
@@ -284,7 +285,7 @@ func NewDeployCreateCmd() *cobra.Command {
 
 func getDeployProgress(code string) (deploymentProgress DeploymentProgress) {
 
-	body := httpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/progress")
+	body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments/"+code+"/progress", API_TOKEN)
 	if err := json.Unmarshal(body, &deploymentProgress); err != nil {
 		log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 	}

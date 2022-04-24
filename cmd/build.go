@@ -58,17 +58,17 @@ type buildOptions struct {
 }
 
 var ob *buildOptions
-var validBuildArgs = []string{"get", "get-all", "logs", "progress", "create"}
+var validBuildArgs = []string{"get", "getAll", "logs", "progress", "create"}
 
 func NewBuildCmd() *cobra.Command {
 	ob = &buildOptions{}
 	cmd := &cobra.Command{
 		Use:                   "build [command]",
 		Aliases:               []string{"b"},
-		Short:                 "build",
+		Short:                 "Trigger build on SAP Cloud",
 		Long:                  `This command can be used to create/get and show build(s)`,
 		ValidArgs:             validBuildArgs,
-		Args:                  isOneAndOnlyValidArgs,
+		Args:                  utils.IsOneAndOnlyValidArgs,
 		DisableFlagsInUseLine: true,
 		Run:                   func(cmd *cobra.Command, args []string) {},
 	}
@@ -91,7 +91,7 @@ func NewBuildGetCmd() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+ob.code)
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/builds/"+ob.code, API_TOKEN)
 			var build Build
 
 			if err := json.Unmarshal(body, &build); err != nil { // Parse []byte to go struct pointer
@@ -111,14 +111,14 @@ func NewBuildGetCmd() *cobra.Command {
 
 func NewBuildGetAllCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-all",
-		Short: "get-all",
+		Use:   "getAll",
+		Short: "getAll",
 		Long:  `This command can be used to get all builds`,
 		Args:  cobra.NoArgs,
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/builds")
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/builds", API_TOKEN)
 			var builds Builds
 			if err := json.Unmarshal(body, &builds); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
@@ -166,7 +166,7 @@ func NewBuildLogsCmd() *cobra.Command {
 			//code, _ := cmd.Flags().GetString("code")
 			zipFileName := "build-" + ob.code + ".zip"
 
-			body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+ob.code+"/logs")
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/builds/"+ob.code+"/logs", API_TOKEN)
 			fmt.Println("[STARTING!...] download logs for build :" + ob.code)
 
 			err := utils.DownloadZipFile(LOGS_DIR, zipFileName, body)
@@ -203,7 +203,7 @@ func NewBuildCreateCmd() *cobra.Command {
 			}
 
 			fmt.Println("[STARTING!...] Build branch " + ob.branch)
-			body := httpPost(client, SAP_CLOUD_API_URL+"/builds", reqBody)
+			body := utils.HttpPost(client, SAP_CLOUD_API_URL+"/builds", API_TOKEN, reqBody)
 			var buildCreateResp BuildCreateResp
 			if err := json.Unmarshal(body, &buildCreateResp); err != nil {
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
@@ -219,7 +219,7 @@ func NewBuildCreateCmd() *cobra.Command {
 				buildProgress := getBuildProgress(buildCode)
 
 				fmt.Println("------------------------------------------------")
-				fmt.Printf("progress: %d \ttasks: %d\tstatus: %s", buildProgress.Percentage, buildProgress.NumberOfTasks, buildProgress.BuildStatus)
+				fmt.Printf("Status: %s\tProgress: %d%s\ttasks: %d", buildProgress.BuildStatus, buildProgress.Percentage, "%", buildProgress.NumberOfTasks)
 
 				if buildProgress.BuildStatus == "SUCCESS" {
 					isFinished = true
@@ -232,6 +232,7 @@ func NewBuildCreateCmd() *cobra.Command {
 				} else if buildProgress.BuildStatus == "FAILED" {
 					log.Fatalf("[FAILED!...] Build Failed :(")
 				}
+				time.Sleep(time.Second * 3)
 
 			}
 
@@ -247,7 +248,7 @@ func NewBuildCreateCmd() *cobra.Command {
 
 func getBuildProgress(code string) (buildProgress BuildProgress) {
 
-	body := httpGet(client, SAP_CLOUD_API_URL+"/builds/"+code+"/progress")
+	body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/builds/"+code+"/progress", API_TOKEN)
 	if err := json.Unmarshal(body, &buildProgress); err != nil {
 		log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 	}

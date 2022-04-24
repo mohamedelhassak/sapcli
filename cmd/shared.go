@@ -4,22 +4,26 @@ import (
 	"github.com/mohamedelhassak/sapcli/utils"
 )
 
-var SAPCLI_VERSION = "SAPCLI v0.1.0"
-var WORK_DIR = utils.GetEnvExist("SAPCLI_WORK_DIR", "Environement variable SAPCLI_WORK_DIR not set!")
-var CONF_FILE_NAME_PATTERN = "*.config.*"
+var (
+	SAPCLI_VERSION         = "SAPCLI v0.1.0"
+	CONF_FILE_NAME_PATTERN = ".config.*"
 
-var SLASH_OR_BACKSLASH = ""
-var LOGS_DIR = ""
-var BUILDS_DIR = ""
+	WORK_DIR           string
+	SLASH_OR_BACKSLASH string
+	LOGS_DIR           string
+	BUILDS_DIR         string
 
-//use default url
-var SAP_CLOUD_API_URL = ""
-var API_TOKEN = ""
+	//use default url
+	SAP_CLOUD_API_URL string
+	API_TOKEN         string
+)
 
 // One http client that will be used in the whole application
-var client = httpClient()
+var client = utils.HttpClient()
 
 func init() {
+	WORK_DIR = utils.GetEnvExist("SAPCLI_WORK_DIR", "Environement variable SAPCLI_WORK_DIR not set!")
+
 	//return "\" OR "/" according to OS Type
 	SLASH_OR_BACKSLASH = utils.SlashOrBackslash()
 

@@ -8,11 +8,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//return helper message when command unknown
-func UnknownCommandMsg(cmd string) string {
-	return "[Unknown!...] command not found: Use \"sapcli " + cmd + "--help \" for more information about this command."
-}
-
 // PrettyPrint to print JSON struct in a readable way
 func PrettyPrintJSON(i interface{}) string {
 	s, err := json.MarshalIndent(i, "", "\t")
@@ -31,7 +26,7 @@ func PrettyPrintYAML(i interface{}) string {
 	return string(s)
 }
 
-//PrettyPrint will return string according to the extention eg:json or yaml
+//PrettyPrint returns string according to the extention eg:json or yaml
 func PrettyPrint(i interface{}, extension string) string {
 	switch extension {
 	case ".json":
@@ -45,7 +40,7 @@ func PrettyPrint(i interface{}, extension string) string {
 	}
 }
 
-//SlashOrBackslash will return "\" if OS is windows, "/" otherwise
+//SlashOrBackslash returns "\" if OS is windows, "/" otherwise
 func SlashOrBackslash() string {
 	os := runtime.GOOS
 	switch os {
