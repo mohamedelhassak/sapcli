@@ -1,5 +1,5 @@
 # SAPCLI
-A sample SAP CLI implementation in Go
+A sample CLI implementation for [SAP Commerce Cloud build APIs](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/452dcbb0e00f47e88a69cdaeb87a925d/66abfe678b55457fab235ce8039dda71.html?version=SHIP&locale=en-US).
 
 [![GitHub release](https://img.shields.io/github/release/moul/banner.svg)](https://github.com/mohamedelhassak/sapcli/releases)
 ![Made by Mohamed El hassak](https://img.shields.io/badge/made%20by-Mohamed%20El%20hassak-blue.svg?style=flat)
