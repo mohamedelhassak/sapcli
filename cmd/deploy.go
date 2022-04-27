@@ -108,7 +108,7 @@ func NewDeployGetCmd() *cobra.Command {
 			if err := json.Unmarshal(body, &deployment); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.PrettyPrintJSON(deployment))
+				fmt.Println(utils.PrettyFormatJSON(deployment))
 			}
 		},
 	}
@@ -132,7 +132,7 @@ func NewDeployGetAllCmd() *cobra.Command {
 			if err := json.Unmarshal(body, &deployments); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.PrettyPrintJSON(deployments))
+				fmt.Println(utils.PrettyFormatJSON(deployments))
 			}
 		},
 	}
@@ -204,7 +204,7 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 			if err := json.Unmarshal(body, &deploymentCancelResp); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.PrettyPrintJSON(deploymentCancelResp))
+				fmt.Println(utils.PrettyFormatJSON(deploymentCancelResp))
 			}
 
 		},
@@ -247,7 +247,7 @@ func NewDeployCreateCmd() *cobra.Command {
 			if err := json.Unmarshal(body, &deploymentCreateResp); err != nil {
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.PrettyPrintJSON(deploymentCreateResp))
+				fmt.Println(utils.PrettyFormatJSON(deploymentCreateResp))
 			}
 
 			deployCode := deploymentCreateResp.Code

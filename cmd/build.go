@@ -97,7 +97,7 @@ func NewBuildGetCmd() *cobra.Command {
 			if err := json.Unmarshal(body, &build); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.PrettyPrintJSON(build))
+				fmt.Println(utils.PrettyFormatJSON(build))
 			}
 
 		},
@@ -123,7 +123,7 @@ func NewBuildGetAllCmd() *cobra.Command {
 			if err := json.Unmarshal(body, &builds); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.PrettyPrintJSON(builds))
+				fmt.Println(utils.PrettyFormatJSON(builds))
 			}
 		},
 	}
@@ -208,7 +208,7 @@ func NewBuildCreateCmd() *cobra.Command {
 			if err := json.Unmarshal(body, &buildCreateResp); err != nil {
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
 			} else {
-				fmt.Println(utils.PrettyPrintJSON(buildCreateResp))
+				fmt.Println(utils.PrettyFormatJSON(buildCreateResp))
 			}
 
 			buildCode := buildCreateResp.Code

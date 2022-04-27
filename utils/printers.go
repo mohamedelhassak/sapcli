@@ -9,7 +9,7 @@ import (
 )
 
 // PrettyPrint to print JSON struct in a readable way
-func PrettyPrintJSON(i interface{}) string {
+func PrettyFormatJSON(i interface{}) string {
 	s, err := json.MarshalIndent(i, "", "\t")
 	if err != nil {
 		log.Fatalf("[ERROR!...] Couldn't Marshal JSON: %v", err)
@@ -18,7 +18,7 @@ func PrettyPrintJSON(i interface{}) string {
 }
 
 // PrettyPrint to print yaml struct in a readable way
-func PrettyPrintYAML(i interface{}) string {
+func PrettyFormatYAML(i interface{}) string {
 	s, err := yaml.Marshal(i)
 	if err != nil {
 		log.Fatalf("[ERROR!...] Couldn't Marshal yaml: %v", err)
@@ -27,16 +27,14 @@ func PrettyPrintYAML(i interface{}) string {
 }
 
 //PrettyPrint returns string according to the extention eg:json or yaml
-func PrettyPrint(i interface{}, extension string) string {
+func PrettyFormat(i interface{}, extension string) string {
 	switch extension {
 	case ".json":
-		return PrettyPrintJSON(i)
-	case ".yaml":
-		return PrettyPrintYAML(i)
-	case ".yml":
-		return PrettyPrintYAML(i)
+		return PrettyFormatJSON(i)
+	case ".yaml", ".yml":
+		return PrettyFormatYAML(i)
 	default:
-		return ""
+		return "No valid extention"
 	}
 }
 

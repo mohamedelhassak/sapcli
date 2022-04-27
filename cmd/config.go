@@ -60,7 +60,7 @@ func NewConfigShowCmd() *cobra.Command {
 				return
 			}
 
-			fmt.Println(utils.PrettyPrint(cfg, extension))
+			fmt.Println(utils.PrettyFormat(cfg, extension))
 
 		},
 	}
