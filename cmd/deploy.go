@@ -60,12 +60,12 @@ type DeploymentCreateResp struct {
 }
 
 type deployOptions struct {
-	code               string
-	rollbackDatabase   bool
-	buildCode          string
-	env                string
-	strategy           string
-	databaseUpdateMode string
+	Code               string
+	RollbackDatabase   bool
+	BuildCode          string
+	Env                string
+	Strategy           string
+	DatabaseUpdateMode string
 }
 
 var od *deployOptions
@@ -103,7 +103,7 @@ func NewDeployGetCmd() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code, API_TOKEN)
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.Code, API_TOKEN)
 			var deployment Deployment
 			if err := json.Unmarshal(body, &deployment); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
@@ -112,7 +112,7 @@ func NewDeployGetCmd() *cobra.Command {
 			}
 		},
 	}
-	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To get deployment by its code")
+	cmd.PersistentFlags().StringVarP(&od.Code, "code", "c", "", "To get deployment by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -148,7 +148,7 @@ func NewDeployProgressCmd() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			deploymentProgress := getDeployProgress(od.code)
+			deploymentProgress := getDeployProgress(od.Code)
 			if deploymentProgress.DeploymentStatus != "" {
 				fmt.Println("------------------------------------------------")
 				fmt.Printf("progress: %d\tstatus: %s", deploymentProgress.Percentage, deploymentProgress.DeploymentStatus)
@@ -157,7 +157,7 @@ func NewDeployProgressCmd() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To get deployment progress by its code")
+	cmd.PersistentFlags().StringVarP(&od.Code, "code", "c", "", "To get deployment progress by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -172,13 +172,13 @@ func NewDeployGetCancellationOptionsCmd() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 
-			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellationoptions", API_TOKEN)
+			body := utils.HttpGet(client, SAP_CLOUD_API_URL+"/deployments/"+od.Code+"/cancellationoptions", API_TOKEN)
 
 			fmt.Println(string(body))
 
 		},
 	}
-	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To get deployment cancel options by its code")
+	cmd.PersistentFlags().StringVarP(&od.Code, "code", "c", "", "To get deployment cancel options by its code")
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
 }
@@ -193,13 +193,13 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 
 			reqBody, err := json.Marshal(map[string]bool{
-				"rollbackDatabase": od.rollbackDatabase,
+				"rollbackDatabase": od.RollbackDatabase,
 			})
 			if err != nil {
 				return
 			}
 
-			body := utils.HttpPost(client, SAP_CLOUD_API_URL+"/deployments/"+od.code+"/cancellation", API_TOKEN, reqBody)
+			body := utils.HttpPost(client, SAP_CLOUD_API_URL+"/deployments/"+od.Code+"/cancellation", API_TOKEN, reqBody)
 			var deploymentCancelResp DeploymentCancelResp
 			if err := json.Unmarshal(body, &deploymentCancelResp); err != nil { // Parse []byte to go struct pointer
 				log.Fatalf("[ERROR!...] Couldn't unmarshal JSON")
@@ -209,8 +209,8 @@ func NewDeployCreateCancellationCmd() *cobra.Command {
 
 		},
 	}
-	cmd.PersistentFlags().StringVarP(&od.code, "code", "c", "", "To cancel deployment by its code")
-	cmd.PersistentFlags().BoolVarP(&od.rollbackDatabase, "rollback-database", "r", false, "To cancel deployment by its code ,Values [true | false] default (false)")
+	cmd.PersistentFlags().StringVarP(&od.Code, "code", "c", "", "To cancel deployment by its code")
+	cmd.PersistentFlags().BoolVarP(&od.RollbackDatabase, "rollback-database", "r", false, "To cancel deployment by its code ,Values [true | false] default (false)")
 
 	cmd.MarkPersistentFlagRequired("code")
 	return cmd
@@ -232,16 +232,16 @@ func NewDeployCreateCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 
 			reqBody, err := json.Marshal(map[string]string{
-				"buildCode":          od.buildCode,
-				"databaseUpdateMode": od.databaseUpdateMode,
-				"environmentCode":    od.env,
-				"strategy":           od.strategy,
+				"buildCode":          od.BuildCode,
+				"databaseUpdateMode": od.DatabaseUpdateMode,
+				"environmentCode":    od.Env,
+				"strategy":           od.Strategy,
 			})
 			if err != nil {
 				return
 			}
 
-			fmt.Println("[STARTING!...] Deploying build " + od.buildCode)
+			fmt.Println("[STARTING!...] Deploying build " + od.BuildCode)
 			body := utils.HttpPost(client, SAP_CLOUD_API_URL+"/deployments", API_TOKEN, reqBody)
 			var deploymentCreateResp DeploymentCreateResp
 			if err := json.Unmarshal(body, &deploymentCreateResp); err != nil {
@@ -273,10 +273,10 @@ func NewDeployCreateCmd() *cobra.Command {
 
 		},
 	}
-	cmd.PersistentFlags().StringVarP(&od.buildCode, "build-code", "c", "", "build to deploy")
-	cmd.PersistentFlags().StringVarP(&od.env, "env", "e", "", "target environment ")
-	cmd.PersistentFlags().StringVarP(&od.strategy, "strategy", "s", "ROLLING_UPDATE", "deployment strategy, Values [ ROLLING_UPDATE | RECREATE ]")
-	cmd.PersistentFlags().StringVarP(&od.databaseUpdateMode, "database-update-mode", "m", "NONE", "database update mode options, Values [ NONE | UPDATE | INITIALIZE ]")
+	cmd.PersistentFlags().StringVarP(&od.BuildCode, "build-code", "c", "", "build to deploy")
+	cmd.PersistentFlags().StringVarP(&od.Env, "env", "e", "", "target environment ")
+	cmd.PersistentFlags().StringVarP(&od.Strategy, "strategy", "s", "ROLLING_UPDATE", "deployment strategy, Values [ ROLLING_UPDATE | RECREATE ]")
+	cmd.PersistentFlags().StringVarP(&od.DatabaseUpdateMode, "database-update-mode", "m", "NONE", "database update mode options, Values [ NONE | UPDATE | INITIALIZE ]")
 
 	cmd.MarkPersistentFlagRequired("build-code")
 	cmd.MarkPersistentFlagRequired("env")

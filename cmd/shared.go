@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	SAPCLI_VERSION         = "SAPCLI v0.1.0"
+	SAPCLI_VERSION         = "v0.1.0"
 	CONF_FILE_NAME_PATTERN = ".config.*"
 
 	WORK_DIR           string

@@ -12,6 +12,8 @@ import (
 	"moul.io/banner"
 )
 
+var infoDesc string
+
 func NewInfoCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                   "info",
@@ -20,22 +22,25 @@ func NewInfoCmd() *cobra.Command {
 		Args:                  cobra.NoArgs,
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
+			initInfoDesc()
+			fmt.Println(infoDesc)
 
-			fmt.Println("SAPCLI is a tool to trigger SAP Cloud APIs")
-			fmt.Println(banner.Inline("have fun using sapcli"))
-			fmt.Println("")
-			fmt.Println("Version = " + SAPCLI_VERSION)
-			fmt.Println("")
-			fmt.Println("-->ENV VARIABLES")
-			fmt.Println("SAPCLI_WORK_DIR =", WORK_DIR+"\n")
-			fmt.Println("-->FILES & DIRECTORIES")
-			fmt.Println("Config file :", viper.ConfigFileUsed())
-			fmt.Println("build  dir  :", BUILDS_DIR)
-			fmt.Println("logs   dir  :", LOGS_DIR)
-			fmt.Println("")
-			fmt.Println()
 		},
 	}
 
 	return cmd
+}
+func initInfoDesc() {
+
+	infoDesc = `
+SAPCLI is a tool to trigger SAP Cloud APIs
+	` + banner.Inline("have fun using sapcli") + SAPCLI_VERSION + `
+	
+### ENV VARIABLES
+	SAPCLI_WORK_DIR :` + WORK_DIR + `
+	
+### FILES & DIRECTORIES
+	Config file :` + viper.ConfigFileUsed() + `
+	build  dir  :` + BUILDS_DIR + `
+	logs dir    :` + LOGS_DIR
 }

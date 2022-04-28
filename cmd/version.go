@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"moul.io/banner"
 )
 
 func NewVersionCmd() *cobra.Command {
@@ -21,8 +20,7 @@ func NewVersionCmd() *cobra.Command {
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
 
-			fmt.Println(banner.Inline("have fun using sapcli"))
-			fmt.Println(SAPCLI_VERSION)
+			fmt.Println("SAPCLI Version: " + SAPCLI_VERSION)
 
 		},
 	}
